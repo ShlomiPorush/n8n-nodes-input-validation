@@ -1,0 +1,56 @@
+{
+	"name": "n8n-nodes-input-validation",
+	"version": "0.1.0",
+	"description": "Validate webhook/API input with condition groups and Valid/Invalid outputs for n8n",
+	"license": "MIT",
+	"homepage": "https://github.com/ShlomiPorush/n8n-nodes-input-validation",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"validation",
+		"webhook",
+		"api"
+	],
+	"author": {
+		"name": "Shlomi",
+		"email": ""
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ShlomiPorush/n8n-nodes-input-validation.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [],
+		"nodes": [
+			"dist/nodes/InputValidation/InputValidation.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.39.4",
+		"n8n-workflow": "*",
+		"prettier": "3.8.3",
+		"release-it": "20.0.1",
+		"typescript": "5.9.3",
+		"vitest": "^3.2.4"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

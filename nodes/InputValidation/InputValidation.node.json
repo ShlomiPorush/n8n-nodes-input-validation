@@ -1,0 +1,13 @@
+{
+	"node": "n8n-nodes-input-validation.inputValidation",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Core Nodes"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/ShlomiPorush/n8n-nodes-input-validation"
+			}
+		]
+	}
+}
