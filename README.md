@@ -1,63 +1,127 @@
 # n8n-nodes-input-validation
 
-[![npm version](https://img.shields.io/npm/v/n8n-nodes-input-validation.svg)](https://www.npmjs.com/package/n8n-nodes-input-validation)
+Custom n8n community node for **validating incoming API and webhook data** — parameters, body fields, and headers — and routing the result to **Valid** or **Invalid** outputs.
 
-Community node for [n8n](https://n8n.io) that validates incoming API/webhook data and routes items to **Valid** or **Invalid** outputs — replacing chains of IF + SET nodes.
+When you use n8n as an API gateway, every endpoint needs to check that required fields exist and match the expected format. Today that usually means chaining **Webhook → IF → SET → Respond to Webhook** just to return a `400` with a readable error. This package replaces that pattern with a single node.
 
-## Features
+---
 
-- **Dual outputs** (like IF): **Valid** passes input unchanged; **Invalid** returns a ready-to-use error payload for **Respond to Webhook**
-- **Plain-text error**: `error` field with human-readable messages (e.g. for simple API responses)
-- **Detailed errors**: `errors` array with `field`, `operation`, `message`, and `received`
-- **8 operators**: is empty, is not empty, contains, does not contain, equals, does not equal, greater than, less than
-- **Rule groups** with AND/OR inside each group and AND/OR between groups  
-  Example: `(body.email AND body.age) OR (query.type = premium OR enterprise)`
-- **Field paths** via dot notation: `body.email`, `query.page`, `headers.authorization`
+## What does it do?
 
-## Install in n8n
+The **Input Validation** node reads fields from the incoming item (using dot-notation paths like `body.email` or `query.page`), evaluates your rules, and:
 
-### From npm (recommended)
+- **Valid** — passes the original input through unchanged (continue your workflow)
+- **Invalid** — outputs a ready-made error object for **Respond to Webhook** (status code, plain-text `error`, and structured `errors` array)
 
-1. Open n8n → **Settings** → **Community nodes**
-2. Click **Install**
-3. Enter: `n8n-nodes-input-validation`
-4. Restart n8n if prompted
+No credentials required. Works with any trigger that outputs JSON (typically **Webhook**).
 
-### Local development (npm link)
+### Before vs After
 
-Requires **Node.js 20+** and **npm**.
+**Without this node:**
+
+```
+Webhook → IF (field checks) → SET (build error JSON) → Respond to Webhook
+         → IF (else branch)  → your business logic
+```
+
+**With this node:**
+
+```
+Webhook → Input Validation ─ Valid   → your business logic → Respond 200
+                          └ Invalid → Respond to Webhook ({{ $json }})
+```
+
+---
+
+## Node in this Package
+
+| Node | Type | Description |
+|------|------|-------------|
+| **Input Validation** | Transform | Validate fields with rule groups; route to Valid or Invalid |
+
+---
+
+## Installation
+
+### Community Nodes (Recommended)
+
+1. Go to **Settings → Community Nodes** in your n8n instance
+2. Click **Install a community node**
+3. Enter `n8n-nodes-input-validation`
+4. Click **Install** and restart n8n if prompted
+
+### Manual Installation
 
 ```bash
-git clone https://github.com/ShlomiPorush/n8n-nodes-input-validation.git
-cd n8n-nodes-input-validation
-npm install
-npm run build
-npm link
+cd ~/.n8n/custom   # or your N8N_CUSTOM_EXTENSIONS path
+npm install n8n-nodes-input-validation
+# Restart n8n
 ```
 
-In your n8n custom extensions folder (e.g. `~/.n8n/custom`):
+---
 
-```bash
-npm link n8n-nodes-input-validation
-```
+## Input Validation Node
 
-Restart n8n.
+### Configuration
 
-## Usage
+| Setting | Description |
+|---------|-------------|
+| **Combine Groups** | `AND` = every group must pass · `OR` = at least one group must pass |
+| **Rule Groups** | One or more groups of conditions (see below) |
+| **Combine Conditions** (per group) | `AND` = all conditions in the group · `OR` = at least one condition |
+| **Field** | Dot-notation path on the incoming JSON, e.g. `body.email`, `query.page`, `headers.x-api-key` |
+| **Operation** | See [Operators](#operators) |
+| **Value** | Comparison value (not used for Is Empty / Is Not Empty) |
+| **Error Message** | Optional custom text when this condition fails |
 
-### Typical API workflow
+### Options
 
-```
-Webhook → Input Validation
-            ├─ Valid   → business logic → Respond to Webhook (200)
-            └─ Invalid → Respond to Webhook
-                           Response Code: {{ $json.statusCode }}
-                           Response Body: {{ $json }}
-```
+| Option | Default | Description |
+|--------|---------|-------------|
+| **Ignore Case** | `true` | Case-insensitive string comparisons |
+| **Error Status Code** | `400` | HTTP code in the Invalid output (`statusCode`) |
+| **Include Original Input** | `false` | Adds `original` with the full input JSON on Invalid |
+| **Error Message** | `Validation failed` | Summary text in the Invalid output (`message`) |
 
-For a short text-only response, use `{{ $json.error }}` as the body.
+### How it works
 
-### Invalid output
+1. A request hits your workflow (e.g. via **Webhook**)
+2. The node reads each configured **Field** from the item JSON
+3. Conditions are evaluated inside each **Rule Group**, then groups are combined with **Combine Groups**
+4. **All rules pass** → item goes to the **Valid** output (unchanged)
+5. **Any rule fails** → item goes to the **Invalid** output with a structured error payload
+
+### Operators
+
+| Operation | Value | Description |
+|-----------|-------|-------------|
+| **Is Empty** | — | `null`, `undefined`, `""`, or empty array |
+| **Is Not Empty** | — | Field must have a value |
+| **Contains** | Yes | String contains the value |
+| **Does Not Contain** | Yes | String does not contain the value |
+| **Equals** | Yes | String equality (respects Ignore Case) |
+| **Does Not Equal** | Yes | String inequality |
+| **Greater Than** | Yes | Numeric comparison (`body.age` > `18`) |
+| **Less Than** | Yes | Numeric comparison |
+
+### Rule groups example
+
+Validate that either `(email AND age)` **or** `(premium OR enterprise plan)`:
+
+| Combine Groups | **OR** |
+|----------------|--------|
+| **Group 1** — Combine Conditions: **AND** | `body.email` · Is Not Empty |
+| | `body.age` · Greater Than · `18` |
+| **Group 2** — Combine Conditions: **OR** | `query.type` · Equals · `premium` |
+| | `query.type` · Equals · `enterprise` |
+
+Logic: `(email ∧ age>18) ∨ (type=premium ∨ type=enterprise)`
+
+---
+
+## Invalid Output
+
+When validation fails, the **Invalid** branch receives:
 
 ```json
 {
@@ -71,79 +135,94 @@ For a short text-only response, use `{{ $json.error }}` as the body.
       "operation": "isNotEmpty",
       "message": "body.email must not be empty",
       "received": null
+    },
+    {
+      "field": "body.age",
+      "operation": "greaterThan",
+      "message": "body.age must be greater than 18",
+      "received": "12"
     }
   ]
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `message` | Summary (configurable in node options) |
-| `error` | All failed conditions as one string, separated by `;` |
-| `errors` | Structured list for programmatic handling |
-| `statusCode` | Suggested HTTP code (default `400`) |
-| `original` | Included only when **Include Original Input** is enabled |
+| Field | Use |
+|-------|-----|
+| `statusCode` | Set **Respond to Webhook → Response Code** to `{{ $json.statusCode }}` |
+| `error` | Plain-text body — all failures joined with `;` |
+| `errors` | Full list for logging or JSON API responses |
+| `message` | Short summary line |
+| `original` | Present only if **Include Original Input** is enabled |
 
-### Node options
+---
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| Ignore Case | `true` | Case-insensitive string comparisons |
-| Error Status Code | `400` | Value in `statusCode` on Invalid output |
-| Include Original Input | `false` | Adds `original` with the full input JSON |
-| Error Message | `Validation failed` | Value in `message` on Invalid output |
+## Examples
 
-Per-condition **Error Message** overrides the default text for that rule (also reflected in `error` and `errors`).
+### Example: POST API with required body fields
 
-## Operators
+**Workflow:**
 
-| Operation | Value required | Description |
-|-----------|----------------|-------------|
-| Is Empty | No | `null`, `undefined`, `""`, or empty array |
-| Is Not Empty | No | Opposite of above |
-| Contains | Yes | String contains value |
-| Does Not Contain | Yes | Opposite |
-| Equals | Yes | String comparison |
-| Does Not Equal | Yes | Opposite |
-| Greater Than | Yes | Numeric comparison |
-| Less Than | Yes | Numeric comparison |
+```
+Webhook (POST /api/orders)
+  → Input Validation
+      Valid   → Create Order → Respond to Webhook (200)
+      Invalid → Respond to Webhook
+                  Response Code: {{ $json.statusCode }}
+                  Response Body: {{ $json }}
+```
 
-## Rule groups example
+**Rules (single group, AND):**
 
-**Combine Groups:** OR
+| Field | Operation | Value |
+|-------|-----------|-------|
+| `body.customer_id` | Is Not Empty | |
+| `body.amount` | Greater Than | `0` |
+| `body.currency` | Equals | `USD` |
 
-| Group | Combine Conditions | Conditions |
-|-------|-------------------|------------|
-| 1 | AND | `body.email` is not empty, `body.age` greater than `18` |
-| 2 | OR | `query.type` equals `premium`, `query.type` equals `enterprise` |
+**Invalid response** (what the client sees if `body.amount` is missing):
 
-Evaluates: `(email ∧ age) ∨ (premium ∨ enterprise)`.
+```json
+{
+  "valid": false,
+  "statusCode": 400,
+  "message": "Validation failed",
+  "error": "body.amount must not be empty",
+  "errors": [ ... ]
+}
+```
+
+### Example: Simple text error response
+
+Connect **Invalid** → **Respond to Webhook**:
+
+- **Response Code:** `{{ $json.statusCode }}`
+- **Response Body:** `{{ $json.error }}`
+
+Client receives: `body.email must not be empty; body.age must be greater than 18`
+
+### Example: calling the webhook
+
+```bash
+curl -X POST https://your-n8n.com/webhook/orders \
+  -H "Content-Type: application/json" \
+  -d '{"customer_id": "c_1", "amount": 99, "currency": "USD"}'
+```
+
+---
 
 ## Development
 
-Lightweight toolchain — **no** full n8n / `@n8n/node-cli` install (avoids native `isolated-vm` builds).
-
 ```bash
+git clone https://github.com/ShlomiPorush/n8n-nodes-input-validation.git
+cd n8n-nodes-input-validation
 npm install
-npm run build    # tsc + copy icons (build.mjs)
-npm test         # vitest
-npm run build:watch
+npm run build
+npm test
 ```
 
-**Requirements:** Node.js **20+** (`engines` in `package.json`).
+Requires **Node.js 20+**. Publishing: push a version tag (`v1.0.0`) to trigger the npm publish workflow.
 
-**WSL:** Prefer the Linux filesystem (`~/projects/...`) over `/mnt/c/...` if you hit slow builds or path issues.
-
-## Publishing
-
-Pushing a version tag triggers the GitHub Action (`.github/workflows/npm-publish.yml`):
-
-```bash
-git tag v1.0.1
-git push origin v1.0.1
-```
-
-The workflow runs `npm ci`, `npm run build`, `npm test`, and publishes to npm with provenance.
+---
 
 ## License
 
