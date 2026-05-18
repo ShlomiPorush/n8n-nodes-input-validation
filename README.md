@@ -71,7 +71,8 @@ npm install n8n-nodes-input-validation
 | **Combine Conditions** (per group) | `AND` = all conditions in the group · `OR` = at least one condition |
 | **Field** | Dot-notation path on the incoming JSON, e.g. `body.email`, `query.page`, `headers.x-api-key` |
 | **Operation** | See [Operators](#operators) |
-| **Value** | Comparison value (not used for Is Empty / Is Not Empty) |
+| **Value** | Comparison value (not used for empty/boolean-only operations) |
+| **Default Value** | Used when the field path is missing from the input (e.g. `false` for a missing boolean) |
 | **Error Message** | Optional custom text when this condition fails |
 
 ### Options
@@ -103,6 +104,11 @@ npm install n8n-nodes-input-validation
 | **Does Not Equal** | Yes | String inequality |
 | **Greater Than** | Yes | Numeric comparison (`body.age` > `18`) |
 | **Less Than** | Yes | Numeric comparison |
+| **Is True** | — | Value must be `true` (boolean, or `true` / `1` as string) |
+| **Is False** | — | Value must be `false` (boolean, or `false` / `0` as string) |
+| **Is Boolean** | — | Value must be a valid boolean (`true` or `false`) |
+
+Accepts native booleans and common API string forms: `true`, `false`, `1`, `0` (case-insensitive).
 
 ### Rule groups example
 
@@ -157,6 +163,14 @@ When validation fails, the **Invalid** branch receives:
 ---
 
 ## Examples
+
+### Example: Boolean flag with default
+
+| Field | Operation | Default Value |
+|-------|-----------|---------------|
+| `body.accept_terms` | Is True | `false` |
+
+If the client omits `accept_terms`, it is treated as `false` and validation fails. If sent as `true` or `"true"`, validation passes.
 
 ### Example: POST API with required body fields
 

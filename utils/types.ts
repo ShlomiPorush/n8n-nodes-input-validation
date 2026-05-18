@@ -8,12 +8,16 @@ export type ValidationOperation =
 	| 'equals'
 	| 'notEquals'
 	| 'greaterThan'
-	| 'lessThan';
+	| 'lessThan'
+	| 'isTrue'
+	| 'isFalse'
+	| 'isBoolean';
 
 export interface ValidationCondition {
 	field: string;
 	operation: ValidationOperation;
 	value?: string;
+	defaultValue?: string;
 	errorMessage?: string;
 }
 

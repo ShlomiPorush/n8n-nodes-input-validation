@@ -105,6 +105,9 @@ export class InputValidation implements INodeType {
 													{ name: 'Does Not Equal', value: 'notEquals' },
 													{ name: 'Greater Than', value: 'greaterThan' },
 													{ name: 'Less Than', value: 'lessThan' },
+													{ name: 'Is True', value: 'isTrue' },
+													{ name: 'Is False', value: 'isFalse' },
+													{ name: 'Is Boolean', value: 'isBoolean' },
 												],
 												default: 'isNotEmpty',
 												required: true,
@@ -116,9 +119,24 @@ export class InputValidation implements INodeType {
 												default: '',
 												displayOptions: {
 													hide: {
-														operation: ['isEmpty', 'isNotEmpty'],
+														operation: [
+															'isEmpty',
+															'isNotEmpty',
+															'isTrue',
+															'isFalse',
+															'isBoolean',
+														],
 													},
 												},
+											},
+											{
+												displayName: 'Default Value',
+												name: 'defaultValue',
+												type: 'string',
+												default: '',
+												placeholder: 'e.g. false',
+												description:
+													'Applied when the field is missing from the input (path not found). For booleans use true or false.',
 											},
 											{
 												displayName: 'Error Message',

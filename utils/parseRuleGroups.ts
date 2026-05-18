@@ -4,6 +4,7 @@ interface RawCondition {
 	field?: string;
 	operation?: ValidationOperation;
 	value?: string;
+	defaultValue?: string;
 	errorMessage?: string;
 }
 
@@ -34,6 +35,7 @@ export function parseRuleGroups(raw: RawRuleGroups | undefined): RuleGroup[] {
 					field: c.field.trim(),
 					operation: c.operation,
 					value: c.value,
+					defaultValue: c.defaultValue,
 					errorMessage: c.errorMessage,
 				}),
 			),

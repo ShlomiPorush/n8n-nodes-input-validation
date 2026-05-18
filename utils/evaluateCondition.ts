@@ -1,4 +1,5 @@
-import { getFieldValue } from './getFieldValue';
+import { isBooleanValue, toBoolean } from './boolean';
+import { resolveFieldValue } from './resolveFieldValue';
 import type {
 	ConditionResult,
 	ValidationCondition,
@@ -57,6 +58,9 @@ function defaultMessage(
 		notEquals: `${field} must not equal "${expected ?? ''}"`,
 		greaterThan: `${field} must be greater than ${expected ?? ''}`,
 		lessThan: `${field} must be less than ${expected ?? ''}`,
+		isTrue: `${field} must be true`,
+		isFalse: `${field} must be false`,
+		isBoolean: `${field} must be true or false`,
 	};
 
 	return messages[operation];
@@ -80,7 +84,7 @@ export function evaluateCondition(
 	data: Record<string, unknown>,
 	options: ValidationOptions,
 ): ConditionResult {
-	const received = getFieldValue(data, condition.field);
+	const received = resolveFieldValue(data, condition);
 	const expected = condition.value ?? '';
 	const message =
 		condition.errorMessage?.trim() ||
@@ -147,6 +151,39 @@ export function evaluateCondition(
 			pass = left < right;
 			break;
 		}
+		case 'isTrue': {
+			const bool = toBoolean(received);
+			if (bool === null) {
+				return {
+					pass: false,
+					error: buildError(
+						condition,
+						received,
+						`${message} (boolean true/false required)`,
+					),
+				};
+			}
+			pass = bool === true;
+			break;
+		}
+		case 'isFalse': {
+			const bool = toBoolean(received);
+			if (bool === null) {
+				return {
+					pass: false,
+					error: buildError(
+						condition,
+						received,
+						`${message} (boolean true/false required)`,
+					),
+				};
+			}
+			pass = bool === false;
+			break;
+		}
+		case 'isBoolean':
+			pass = isBooleanValue(received);
+			break;
 		default:
 			pass = false;
 	}

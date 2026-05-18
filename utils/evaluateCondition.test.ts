@@ -102,4 +102,52 @@ describe('evaluateCondition', () => {
 		expect(result.pass).toBe(false);
 		expect(result.error?.message).toContain('numeric comparison');
 	});
+
+	it('isTrue / isFalse / isBoolean', () => {
+		const boolData = { body: { active: true, deleted: false, flag: 'true' } };
+
+		expect(
+			evaluateCondition(condition({ field: 'body.active', operation: 'isTrue' }), boolData, options)
+				.pass,
+		).toBe(true);
+		expect(
+			evaluateCondition(
+				condition({ field: 'body.deleted', operation: 'isFalse' }),
+				boolData,
+				options,
+			).pass,
+		).toBe(true);
+		expect(
+			evaluateCondition(condition({ field: 'body.flag', operation: 'isBoolean' }), boolData, options)
+				.pass,
+		).toBe(true);
+	});
+
+	it('applies default value when field is missing', () => {
+		const missing = { body: {} };
+
+		expect(
+			evaluateCondition(
+				condition({
+					field: 'body.accepted',
+					operation: 'isTrue',
+					defaultValue: 'false',
+				}),
+				missing,
+				options,
+			).pass,
+		).toBe(false);
+
+		expect(
+			evaluateCondition(
+				condition({
+					field: 'body.accepted',
+					operation: 'isTrue',
+					defaultValue: 'true',
+				}),
+				missing,
+				options,
+			).pass,
+		).toBe(true);
+	});
 });
