@@ -1,5 +1,6 @@
 import { isBooleanValue, toBoolean } from './boolean';
-import { resolveFieldValue } from './resolveFieldValue';
+import { getFieldValue } from './getFieldValue';
+import { parseDefaultValue } from './parseDefaultValue';
 import type {
 	ConditionResult,
 	ValidationCondition,
@@ -84,7 +85,21 @@ export function evaluateCondition(
 	data: Record<string, unknown>,
 	options: ValidationOptions,
 ): ConditionResult {
-	const received = resolveFieldValue(data, condition);
+	const received = getFieldValue(data, condition.field);
+	const defaultRaw = condition.defaultValue?.trim();
+
+	// Field missing + default configured → skip validation, apply default on Valid output
+	if (received === undefined && defaultRaw) {
+		return {
+			pass: true,
+			skipped: true,
+			defaultToApply: {
+				field: condition.field,
+				value: parseDefaultValue(defaultRaw, condition.operation),
+			},
+		};
+	}
+
 	const expected = condition.value ?? '';
 	const message =
 		condition.errorMessage?.trim() ||

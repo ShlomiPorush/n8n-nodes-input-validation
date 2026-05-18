@@ -72,7 +72,7 @@ npm install n8n-nodes-input-validation
 | **Field** | Dot-notation path on the incoming JSON, e.g. `body.email`, `query.page`, `headers.x-api-key` |
 | **Operation** | See [Operators](#operators) |
 | **Value** | Comparison value (not used for empty/boolean-only operations) |
-| **Default Value** | Used when the field path is missing from the input (e.g. `false` for a missing boolean) |
+| **Default Value** | When the field is **missing**: skip this condition, and add the default to the **Valid** output JSON |
 | **Error Message** | Optional custom text when this condition fails |
 
 ### Options
@@ -164,13 +164,18 @@ When validation fails, the **Invalid** branch receives:
 
 ## Examples
 
-### Example: Boolean flag with default
+### Example: Missing field with default (skip + inject)
 
 | Field | Operation | Default Value |
 |-------|-----------|---------------|
-| `body.accept_terms` | Is True | `false` |
+| `Test` | Is Empty | `false` |
 
-If the client omits `accept_terms`, it is treated as `false` and validation fails. If sent as `true` or `"true"`, validation passes.
+Input: `{ "ClientName": "Moses" }` — no `Test` field.
+
+- The **Is Empty** condition is **skipped** (field does not exist)
+- **Valid** output: `{ "ClientName": "Moses", "Test": false }`
+
+If the client **sends** `Test`, the condition runs normally (Is Empty must pass).
 
 ### Example: POST API with required body fields
 

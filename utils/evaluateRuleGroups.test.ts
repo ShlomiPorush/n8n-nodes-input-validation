@@ -22,7 +22,7 @@ describe('evaluateRuleGroups', () => {
 			},
 		];
 
-		expect(evaluateRuleGroups(groups, 'and', data, options)).toEqual([]);
+		expect(evaluateRuleGroups(groups, 'and', data, options).errors).toEqual([]);
 	});
 
 	it('OR within group passes when any condition passes', () => {
@@ -36,7 +36,7 @@ describe('evaluateRuleGroups', () => {
 			},
 		];
 
-		expect(evaluateRuleGroups(groups, 'and', data, options)).toEqual([]);
+		expect(evaluateRuleGroups(groups, 'and', data, options).errors).toEqual([]);
 	});
 
 	it('OR between groups: (email AND age) OR (premium OR enterprise)', () => {
@@ -57,7 +57,7 @@ describe('evaluateRuleGroups', () => {
 			},
 		];
 
-		expect(evaluateRuleGroups(groups, 'or', data, options)).toEqual([]);
+		expect(evaluateRuleGroups(groups, 'or', data, options).errors).toEqual([]);
 	});
 
 	it('returns errors when validation fails', () => {
@@ -68,8 +68,28 @@ describe('evaluateRuleGroups', () => {
 			},
 		];
 
-		const errors = evaluateRuleGroups(groups, 'and', data, options);
+		const { errors } = evaluateRuleGroups(groups, 'and', data, options);
 		expect(errors.length).toBe(1);
 		expect(errors[0].field).toBe('body.missing');
+	});
+
+	it('skips condition and collects default when field is missing', () => {
+		const groups: RuleGroup[] = [
+			{
+				groupCombinator: 'and',
+				conditions: [
+					{
+						field: 'Test',
+						operation: 'isEmpty',
+						defaultValue: 'false',
+					},
+					{ field: 'body.email', operation: 'isNotEmpty' },
+				],
+			},
+		];
+
+		const { errors, defaults } = evaluateRuleGroups(groups, 'and', data, options);
+		expect(errors).toEqual([]);
+		expect(defaults).toEqual([{ field: 'Test', value: false }]);
 	});
 });

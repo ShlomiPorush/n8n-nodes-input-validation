@@ -7,6 +7,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
+import { applyDefaultsToJson } from '../../utils/applyDefaults';
 import { evaluateRuleGroups } from '../../utils/evaluateRuleGroups';
 import { formatValidationError } from '../../utils/formatValidationError';
 import { parseRuleGroups } from '../../utils/parseRuleGroups';
@@ -136,7 +137,7 @@ export class InputValidation implements INodeType {
 												default: '',
 												placeholder: 'e.g. false',
 												description:
-													'Applied when the field is missing from the input (path not found). For booleans use true or false.',
+													'When the field is missing: skip this condition and add this value to the Valid output. For booleans use true or false.',
 											},
 											{
 												displayName: 'Error Message',
@@ -218,7 +219,7 @@ export class InputValidation implements INodeType {
 				const groups = parseRuleGroups(ruleGroupsRaw as Parameters<typeof parseRuleGroups>[0]);
 				const data = item.json as Record<string, unknown>;
 
-				const errors = evaluateRuleGroups(groups, groupsCombinator, data, {
+				const { errors, defaults } = evaluateRuleGroups(groups, groupsCombinator, data, {
 					ignoreCase: options.ignoreCase ?? true,
 				});
 
@@ -226,7 +227,10 @@ export class InputValidation implements INodeType {
 					if (item.pairedItem === undefined) {
 						item.pairedItem = { item: itemIndex };
 					}
-					validItems.push(item);
+					validItems.push({
+						...item,
+						json: applyDefaultsToJson(data, defaults),
+					});
 					continue;
 				}
 

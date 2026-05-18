@@ -37,7 +37,20 @@ export interface ValidationError {
 	received: unknown;
 }
 
+export interface FieldDefault {
+	field: string;
+	value: unknown;
+}
+
 export interface ConditionResult {
 	pass: boolean;
 	error?: ValidationError;
+	/** Condition skipped because the field was missing and a default is configured */
+	skipped?: boolean;
+	defaultToApply?: FieldDefault;
+}
+
+export interface ValidationResult {
+	errors: ValidationError[];
+	defaults: FieldDefault[];
 }

@@ -123,29 +123,29 @@ describe('evaluateCondition', () => {
 		).toBe(true);
 	});
 
-	it('applies default value when field is missing', () => {
-		const missing = { body: {} };
+	it('skips condition when field is missing and default is set', () => {
+		const missing = { ClientName: 'Moses' };
 
+		const result = evaluateCondition(
+			condition({
+				field: 'Test',
+				operation: 'isEmpty',
+				defaultValue: 'false',
+			}),
+			missing,
+			options,
+		);
+
+		expect(result.pass).toBe(true);
+		expect(result.skipped).toBe(true);
+		expect(result.defaultToApply).toEqual({ field: 'Test', value: false });
+	});
+
+	it('validates normally when field is missing without default', () => {
 		expect(
 			evaluateCondition(
-				condition({
-					field: 'body.accepted',
-					operation: 'isTrue',
-					defaultValue: 'false',
-				}),
-				missing,
-				options,
-			).pass,
-		).toBe(false);
-
-		expect(
-			evaluateCondition(
-				condition({
-					field: 'body.accepted',
-					operation: 'isTrue',
-					defaultValue: 'true',
-				}),
-				missing,
+				condition({ field: 'Test', operation: 'isEmpty' }),
+				{ ClientName: 'Moses' },
 				options,
 			).pass,
 		).toBe(true);
