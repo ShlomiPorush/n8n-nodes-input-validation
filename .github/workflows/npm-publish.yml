@@ -9,6 +9,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  # Use Node 24 for JavaScript-based actions (checkout, setup-node, etc.)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -31,6 +35,9 @@ jobs:
 
       - name: Build the node
         run: npm run build
+
+      - name: Run tests
+        run: npm test
 
       - name: Publish to NPM
         run: npm publish --provenance --access public
