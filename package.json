@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-input-validation",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Validate webhook/API input with condition groups and Valid/Invalid outputs for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/ShlomiPorush/n8n-nodes-input-validation",
@@ -19,16 +19,15 @@
 		"type": "git",
 		"url": "git+https://github.com/ShlomiPorush/n8n-nodes-input-validation.git"
 	},
+	"engines": {
+		"node": ">=20"
+	},
 	"scripts": {
-		"build": "n8n-node build",
+		"build": "node scripts/build.mjs",
 		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "npm run build && npm test"
 	},
 	"files": [
 		"dist"
@@ -42,11 +41,7 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"eslint": "9.39.4",
-		"n8n-workflow": "*",
-		"prettier": "3.8.3",
-		"release-it": "20.0.1",
+		"n8n-workflow": "^1.82.0",
 		"typescript": "5.9.3",
 		"vitest": "^3.2.4"
 	},

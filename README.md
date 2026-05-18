@@ -12,29 +12,32 @@ Community node for [n8n](https://n8n.io) that validates incoming API/webhook dat
 
 ## Requirements
 
-You need **Node.js 18+** and **npm** to install dependencies and build. Download from [https://nodejs.org](https://nodejs.org) (npm is included).
+You need **Node.js 20+** and **npm**. This package uses a lightweight build (`tsc` only) — no full n8n install, so no `isolated-vm` compile step.
 
 ```bash
 cd n8n-nodes-input-validation
+rm -rf node_modules package-lock.json   # if a previous install failed
 npm install
 npm run build
 npm test
 ```
 
-## Install in n8n (local development)
+**WSL tip:** If you previously installed under `/mnt/c/...` and saw `isolated-vm` / `node-gyp` errors, clone or copy the repo to the Linux filesystem (e.g. `~/projects/...`) and use Node 20 from [nvm](https://github.com/nvm-sh/nvm): `nvm install 20 && nvm use 20`.
+
+## Install in n8n
+
+**From npm** (after publish): Settings → Community nodes → Install `n8n-nodes-input-validation`.
+
+**Local link:**
 
 ```bash
 npm run build
 npm link
-```
-
-In your n8n custom extensions folder (e.g. `~/.n8n/custom`):
-
-```bash
+# in ~/.n8n/custom (or your N8N_CUSTOM_EXTENSIONS path):
 npm link n8n-nodes-input-validation
 ```
 
-Or use `npm run dev` to start n8n with hot reload after dependencies are installed.
+Restart n8n.
 
 ## Typical API workflow
 
