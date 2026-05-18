@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-input-validation",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Validate webhook/API input with condition groups and Valid/Invalid outputs for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/ShlomiPorush/n8n-nodes-input-validation",
@@ -23,7 +23,7 @@
 		"node": ">=20"
 	},
 	"scripts": {
-		"build": "node scripts/build.mjs",
+		"build": "node build.mjs",
 		"build:watch": "tsc --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
