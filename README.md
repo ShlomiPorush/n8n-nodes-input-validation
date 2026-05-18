@@ -210,20 +210,6 @@ curl -X POST https://your-n8n.com/webhook/orders \
 
 ---
 
-## Development
-
-```bash
-git clone https://github.com/ShlomiPorush/n8n-nodes-input-validation.git
-cd n8n-nodes-input-validation
-npm install
-npm run build
-npm test
-```
-
-Requires **Node.js 20+**. Publishing: push a version tag (`v1.0.0`) to trigger the npm publish workflow.
-
----
-
 ## License
 
 MIT
