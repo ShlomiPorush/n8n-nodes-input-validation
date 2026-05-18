@@ -227,10 +227,14 @@ export class InputValidation implements INodeType {
 					if (item.pairedItem === undefined) {
 						item.pairedItem = { item: itemIndex };
 					}
-					validItems.push({
-						...item,
-						json: applyDefaultsToJson(data, defaults),
-					});
+					if (defaults.length === 0) {
+						validItems.push(item);
+					} else {
+						validItems.push({
+							...item,
+							json: applyDefaultsToJson(data, defaults) as IDataObject,
+						});
+					}
 					continue;
 				}
 
