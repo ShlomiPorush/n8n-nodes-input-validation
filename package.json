@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-input-validation",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "Validate webhook/API input with condition groups and Valid/Invalid outputs for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/ShlomiPorush/n8n-nodes-input-validation",
@@ -43,7 +43,7 @@
 	"devDependencies": {
 		"n8n-workflow": "^1.82.0",
 		"typescript": "5.9.3",
-		"vitest": "^3.2.4"
+		"vitest": "^3.2.6"
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
